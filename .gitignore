@@ -1,0 +1,11 @@
+# Binários
+/bin/
+/server
+*.exe
+
+# Ambiente
+.env
+
+# Cobertura de testes
+coverage.out
+coverage.html

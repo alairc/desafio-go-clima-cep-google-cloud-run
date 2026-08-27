@@ -1,0 +1,9 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      WEATHER_API_KEY: ${WEATHER_API_KEY:?defina WEATHER_API_KEY no .env}
+    restart: unless-stopped
