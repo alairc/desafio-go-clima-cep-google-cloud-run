@@ -16,7 +16,7 @@ func TestViaCEPLocateSucesso(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		caminhoRecebido = r.URL.Path
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"cep":"01310-100","localidade":"São Paulo","uf":"SP"}`))
+		_, _ = w.Write([]byte(`{"cep":"01310-100","localidade":"São Paulo","uf":"SP","estado":"São Paulo"}`))
 	}))
 	defer srv.Close()
 
@@ -27,13 +27,32 @@ func TestViaCEPLocateSucesso(t *testing.T) {
 		t.Fatalf("erro inesperado: %v", err)
 	}
 
-	want := Address{Zipcode: "01310-100", City: "São Paulo", State: "SP"}
+	want := Address{Zipcode: "01310-100", City: "São Paulo", State: "SP", StateName: "São Paulo"}
 	if got != want {
 		t.Errorf("Locate = %+v, quer %+v", got, want)
 	}
 
 	if caminhoRecebido != "/ws/01310100/json/" {
 		t.Errorf("caminho chamado = %q, quer /ws/01310100/json/", caminhoRecebido)
+	}
+}
+
+// O campo "estado" é uma adição recente da ViaCEP. Sem ele, StateName cai na
+// sigla — a WeatherAPI erra mais, mas o request não fica sem estado nenhum.
+func TestViaCEPLocateSemCampoEstado(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"cep":"01310-100","localidade":"São Paulo","uf":"SP"}`))
+	}))
+	defer srv.Close()
+
+	got, err := NewViaCEP(WithBaseURL(srv.URL)).Locate(context.Background(), "01310100")
+	if err != nil {
+		t.Fatalf("erro inesperado: %v", err)
+	}
+
+	if got.StateName != "SP" {
+		t.Errorf("StateName = %q, quer SP (fallback para a sigla)", got.StateName)
 	}
 }
 

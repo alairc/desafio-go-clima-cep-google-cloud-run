@@ -63,7 +63,7 @@ func do(t *testing.T, mux *http.ServeMux, path string) *httptest.ResponseRecorde
 
 // Cenário 1 do contrato: 200 OK com as três escalas.
 func TestHandleSucesso(t *testing.T) {
-	locator := &locatorFake{address: cep.Address{Zipcode: "01310-100", City: "São Paulo", State: "SP"}}
+	locator := &locatorFake{address: cep.Address{Zipcode: "01310-100", City: "São Paulo", State: "SP", StateName: "São Paulo"}}
 	provider := &providerFake{current: weather.Current{TempC: 28.5}}
 
 	rec := do(t, newTestServer(locator, provider), "/weather/01310100")
@@ -91,8 +91,8 @@ func TestHandleSucesso(t *testing.T) {
 	}
 
 	// Confirma que a localidade acentuada foi normalizada antes da consulta.
-	if provider.queryChamada != "Sao Paulo,SP,Brazil" {
-		t.Errorf("query = %q, quer Sao Paulo,SP,Brazil", provider.queryChamada)
+	if provider.queryChamada != "Sao Paulo,Sao Paulo,Brazil" {
+		t.Errorf("query = %q, quer Sao Paulo,Sao Paulo,Brazil", provider.queryChamada)
 	}
 }
 
@@ -190,12 +190,12 @@ func TestHandleFalhasDeInfra(t *testing.T) {
 		},
 		{
 			name:     "weatherapi indisponivel",
-			locator:  &locatorFake{address: cep.Address{City: "São Paulo", State: "SP"}},
+			locator:  &locatorFake{address: cep.Address{City: "São Paulo", State: "SP", StateName: "São Paulo"}},
 			provider: &providerFake{err: falhaGenerica},
 		},
 		{
 			name:     "chave da weatherapi rejeitada",
-			locator:  &locatorFake{address: cep.Address{City: "São Paulo", State: "SP"}},
+			locator:  &locatorFake{address: cep.Address{City: "São Paulo", State: "SP", StateName: "São Paulo"}},
 			provider: &providerFake{err: weather.ErrUnauthorized},
 		},
 	}

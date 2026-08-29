@@ -75,7 +75,7 @@ func (h *Weather) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	current, err := h.provider.Current(ctx, weather.BuildQuery(address.City, address.State))
+	current, err := h.provider.Current(ctx, weather.BuildQuery(address.City, address.StateName))
 	if err != nil {
 		// A WeatherAPI não reconhecer a localidade resolvida é, na prática, um
 		// CEP para o qual não conseguimos entregar clima. O contrato só prevê

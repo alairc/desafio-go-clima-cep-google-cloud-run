@@ -119,9 +119,16 @@ func (w *WeatherAPI) Current(ctx context.Context, query string) (Current, error)
 }
 
 // BuildQuery monta o termo de busca da WeatherAPI a partir de uma localidade
-// brasileira. Os acentos são removidos e a UF e o país são anexados: a
-// WeatherAPI erra o match com nomes acentuados e cidades homônimas são comuns
-// entre estados (ex.: "Bom Jesus").
+// brasileira, no formato "Cidade,Estado,Brazil".
+//
+// Duas exigências da API, ambas verificadas contra ela:
+//
+//   - Acentos são removidos. Com eles o match degrada de formas surpreendentes:
+//     "Belém,Pará,Brazil" resolve para Brazil, Indiana (EUA).
+//   - O estado vai por extenso, não pela sigla. A WeatherAPI ignora a UF, então
+//     "Bom Jesus,RS,Brazil" cai em Bom Jesus do Acre; já
+//     "Bom Jesus,Rio Grande do Sul,Brazil" acerta. Por isso o chamador passa
+//     cep.Address.StateName, não .State.
 func BuildQuery(city, state string) string {
 	parts := make([]string, 0, 3)
 
@@ -130,7 +137,7 @@ func BuildQuery(city, state string) string {
 	}
 
 	if state = strings.TrimSpace(state); state != "" {
-		parts = append(parts, state)
+		parts = append(parts, removeDiacritics(state))
 	}
 
 	parts = append(parts, "Brazil")

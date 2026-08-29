@@ -17,10 +17,15 @@ import (
 const DefaultBaseURL = "https://viacep.com.br"
 
 // Address é a localidade resolvida a partir de um CEP.
+//
+// State e StateName carregam a mesma informação em formatos diferentes porque
+// cada consumidor precisa de um: a sigla é o identificador canônico, mas a
+// WeatherAPI só desambigua cidades homônimas com o nome por extenso.
 type Address struct {
-	Zipcode string
-	City    string
-	State   string
+	Zipcode   string
+	City      string
+	State     string
+	StateName string
 }
 
 // Locator resolve um CEP em uma localidade. Existe para permitir substituição
@@ -62,6 +67,7 @@ type viaCEPResponse struct {
 	Cep        string   `json:"cep"`
 	Localidade string   `json:"localidade"`
 	UF         string   `json:"uf"`
+	Estado     string   `json:"estado"`
 	Erro       flexBool `json:"erro"`
 }
 
@@ -123,10 +129,18 @@ func (v *ViaCEP) Locate(ctx context.Context, zipcode string) (Address, error) {
 		return Address{}, apperr.ErrZipcodeNotFound
 	}
 
+	// O campo "estado" é uma adição recente da ViaCEP. Se vier vazio, a sigla
+	// é o melhor que temos — pior para o match, mas melhor que nada.
+	stateName := body.Estado
+	if stateName == "" {
+		stateName = body.UF
+	}
+
 	return Address{
-		Zipcode: body.Cep,
-		City:    body.Localidade,
-		State:   body.UF,
+		Zipcode:   body.Cep,
+		City:      body.Localidade,
+		State:     body.UF,
+		StateName: stateName,
 	}, nil
 }
 

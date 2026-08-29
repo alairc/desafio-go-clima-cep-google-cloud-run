@@ -1,0 +1,21 @@
+# Nada aqui deve subir para o Cloud Build.
+# Sem este arquivo o gcloud deriva um do .gitignore — funciona, mas o segredo
+# em .env é crítico demais para depender de fallback.
+
+.git
+.gitignore
+.gcloudignore
+
+# Segredos: a chave vai por --set-env-vars ou Secret Manager, nunca no source.
+.env
+
+# Artefatos locais
+coverage.out
+coverage.html
+/bin/
+/server
+
+# Documentação e ferramentas que não participam do build
+README.md
+Makefile
+docker-compose.yml

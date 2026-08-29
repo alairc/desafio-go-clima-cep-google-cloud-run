@@ -134,14 +134,20 @@ func TestBuildQuery(t *testing.T) {
 		state string
 		want  string
 	}{
-		{"remove acentos", "São Paulo", "SP", "Sao Paulo,SP,Brazil"},
-		{"circunflexo e cedilha", "Poções", "BA", "Pocoes,BA,Brazil"},
-		{"acento agudo", "Goiânia", "GO", "Goiania,GO,Brazil"},
-		{"til e maiuscula acentuada", "Óbidos", "PA", "Obidos,PA,Brazil"},
-		{"sem acento passa intacto", "Curitiba", "PR", "Curitiba,PR,Brazil"},
-		{"uf ausente", "Recife", "", "Recife,Brazil"},
-		{"espacos ao redor", "  Belém  ", " PA ", "Belem,PA,Brazil"},
-		{"cidade vazia", "", "SP", "SP,Brazil"},
+		{"remove acentos da cidade", "São Paulo", "São Paulo", "Sao Paulo,Sao Paulo,Brazil"},
+		// Sem remover o acento do estado, a WeatherAPI resolve para Brazil, Indiana.
+		{"remove acentos do estado", "Belém", "Pará", "Belem,Para,Brazil"},
+		{"cedilha", "Poções", "Bahia", "Pocoes,Bahia,Brazil"},
+		{"acento no estado e na cidade", "Goiânia", "Goiás", "Goiania,Goias,Brazil"},
+		{"estado composto", "Vitória", "Espírito Santo", "Vitoria,Espirito Santo,Brazil"},
+		{"til no estado", "São Luís", "Maranhão", "Sao Luis,Maranhao,Brazil"},
+		{"sem acento passa intacto", "Curitiba", "Paraná", "Curitiba,Parana,Brazil"},
+		// O fallback da ViaCEP entrega a sigla; precisa continuar montando query.
+		{"estado como sigla", "Recife", "PE", "Recife,PE,Brazil"},
+		{"estado ausente", "Recife", "", "Recife,Brazil"},
+		{"espacos ao redor", "  Belém  ", "  Pará  ", "Belem,Para,Brazil"},
+		{"cidade vazia", "", "Bahia", "Bahia,Brazil"},
+		{"tudo vazio", "", "", "Brazil"},
 	}
 
 	for _, tt := range tests {
